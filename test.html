@@ -1,0 +1,84 @@
+<script src="https://unpkg.com/vue"></script>
+<script>
+window.onload = function () {
+	new Vue({
+    el: '#app',
+    data() {
+        return {
+            model: { data: [
+                {id: 1, x: "a", rollno: 1},
+                {id: 2, x: "b", rollno: 19},
+                {id: 3, x: "x", rollno: 26},
+                {id: 4, x: "t", rollno: 2},
+            ] },
+            columns: {
+              id: {
+                  cast: function(v) {
+                      return +v;
+                  }
+              },
+              rollno: {
+                  cast: function(v) {
+                      return +v;
+                  }
+              }
+            },
+            query: {
+                search_column: 'id',
+                search_operator: 'equal',
+                search_input: ""
+            }
+        };
+    },
+
+computed: {
+        getSearchedRow: function() {
+            if (this.query.search_column === '')
+              return this.model.data;
+        
+            const col = this.query.search_column;
+          
+            const requiredval = (this.columns[col] && this.columns[col].cast) ? this.columns[col].cast(this.query.search_input) : this.query.search_input;
+            
+            return this.model.data.filter(row => {
+                const value = row[col];
+                
+                switch (this.query.search_operator) {
+                    case 'less_than': return value < requiredval;
+                    case 'more_than': return value > requiredval;
+                    case 'equal': return value == requiredval;
+                    
+                    default: return false;
+                }
+
+            });
+          
+
+        }
+    }
+});
+}
+</script>
+<div id="app">
+  <select class="dv-header-select" v-model="query.search_column">
+      <option value="id">ID</option>
+      <option value="rollno">RollNo</option>
+      <option value="x">X</option>
+  </select>
+
+
+  <select class="dv-header-select" v-model="query.search_operator">
+      <option value="equal">=</option>
+      <option value="less_than">&lt;</option>
+      <option value="more_than">&gt;</option>
+  </select>
+
+<input type="text" class="dv-header-input" placeholder="Search"
+    v-model="query.search_input">
+
+  <table>
+    <tr v-for="row in getSearchedRow">
+        <td v-for="(value, key) in row">{{value}}</td>
+    </tr>
+  </table>
+</div>
